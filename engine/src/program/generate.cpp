@@ -3562,7 +3562,16 @@ static void exit_if_gpu_fatal(const std::string& err) {
     }
 }
 
-#if defined(STRATA_USE_HIP) && defined(_WIN32)
+#if defined(STRATA_SHARED_WORKER)
+// One invocation per dedicated process. The worker owns stdin/stdout, signal handlers and the GPU context.
+extern "C"
+#ifdef _WIN32
+__declspec(dllexport)
+#else
+__attribute__((visibility("default")))
+#endif
+int strata_worker_run_v1(int argc, char** argv) {
+#elif defined(STRATA_USE_HIP) && defined(_WIN32)
 static int engine_main(int argc, char** argv) {   // main() is at the end of this file (#3431)
 #else
 int main(int argc, char** argv) {
